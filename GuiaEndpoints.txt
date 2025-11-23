@@ -1,0 +1,177 @@
+SPRING BOOT ACTUATOR - GUÍA COMPLETA DE ENDPOINTS
+
+1. ENDPOINT: /actuator/health
+   PROPÓSITO: Verificar el estado de salud de la aplicación y sus componentes
+   INFORMACIÓN PROPORCIONADA:
+   - Estado general: UP (funcionando), DOWN (con fallos), OUT_OF_SERVICE (en mantenimiento)
+   - Componentes verificados:
+     * Base de datos: Conexión a PostgreSQL, validación de consultas
+     * Servicio bancario: Cuentas activas, balance total, transacciones fallidas
+     * Espacio en disco: Espacio total, libre y umbral mínimo
+     * Ping: Verificación básica de disponibilidad
+     * TransferService: Health check personalizado del servicio de transferencias
+   USO TÍPICO: Load balancers, orquestadores (Kubernetes), monitoreo
+
+2. ENDPOINT: /actuator/metrics
+   PROPÓSITO: Exponer métricas del sistema y aplicación
+   INFORMACIÓN DISPONIBLE:
+   - Métricas del sistema:
+     * jvm.memory.used: Memoria utilizada por la JVM
+     * jvm.threads.live: Hilos activos
+     * system.cpu.usage: Uso del CPU
+     * process.uptime: Tiempo de ejecución
+   - Métricas de aplicación:
+     * http.server.requests: Peticiones HTTP recibidas
+     * bank.transactions.success: Transacciones exitosas personalizadas
+     * bank.transactions.failed: Transacciones fallidas personalizadas
+     * bank.accounts.active: Cuentas activas
+     * bank.balance.total: Balance total del banco
+   USO: Monitoreo de rendimiento, alertas, dashboards
+
+3. ENDPOINT: /actuator/info
+   PROPÓSITO: Información estática de la aplicación
+   INFORMACIÓN:
+   - Información de la aplicación: nombre, versión, descripción
+   - Información del entorno: ambiente (desarrollo, producción)
+   - Información de contacto (si está configurada)
+   USO: Identificación de versión, documentación
+
+4. ENDPOINT: /actuator/bank-stats (PERSONALIZADO)
+   PROPÓSITO: Estadísticas específicas del negocio bancario
+   INFORMACIÓN:
+   - totalBalance: Suma de todos los balances de cuentas
+   - totalAccounts: Número total de cuentas registradas
+   - failedTransactions: Transacciones que han fallado
+   - totalTransferredAmount: Monto total transferido entre cuentas
+   - timestamp: Momento de la consulta
+   - status: Estado operacional del sistema bancario
+   USO: Dashboard de negocio, reportes financieros
+
+5. ENDPOINT: /actuator/transaction-metrics (PERSONALIZADO)
+   PROPÓSITO: Métricas detalladas de transacciones
+   INFORMACIÓN:
+   - successfulTransactions: Transacciones completadas exitosamente
+   - failedTransactions: Transacciones que fallaron
+   - totalTransactions: Suma de transacciones exitosas y fallidas
+   - successRate: Porcentaje de éxito (éxitos/totales * 100)
+   - activeAccounts: Número de cuentas con balance positivo
+   - totalBalance: Balance total actualizado
+   USO: Análisis de rendimiento del servicio, calidad del servicio
+
+6. ENDPOINT: /actuator
+   PROPÓSITO: Descubrimiento de endpoints disponibles
+   INFORMACIÓN:
+   - Enlaces a todos los endpoints expuestos
+   - Ruta completa de cada endpoint
+   USO: Navegación automática, documentación dinámica
+
+7. ENDPOINT: /actuator/env
+   PROPÓSITO: Variables de entorno y configuración
+   INFORMACIÓN:
+   - Variables de entorno del sistema operativo
+   - Propiedades de Spring Boot
+   - Configuración de perfiles activos
+   - Valores de application.properties
+   USO: Debugging de configuración, verificación de variables
+
+8. ENDPOINT: /actuator/beans
+   PROPÓSITO: Lista de todos los beans de Spring
+   INFORMACIÓN:
+   - Todos los componentes registrados en el contexto de Spring
+   - Dependencias entre beans
+   - Alcance de cada bean (singleton, prototype, etc.)
+   - Tipo y clase de cada bean
+   USO: Debugging de inyección de dependencias, análisis de arquitectura
+
+9. ENDPOINT: /actuator/mappings
+   PROPÓSITO: Mapeos de endpoints HTTP
+   INFORMACIÓN:
+   - Todas las rutas REST disponibles
+   - Métodos HTTP soportados (GET, POST, PUT, DELETE)
+   - Controladores asociados a cada ruta
+   - Patrones de URL
+   USO: Documentación automática, descubrimiento de APIs
+
+10. ENDPOINT: /actuator/loggers
+    PROPÓSITO: Configuración de logging
+    INFORMACIÓN:
+    - Niveles de log configurados por paquete
+    - Loggers disponibles
+    - Posibilidad de cambiar niveles en tiempo de ejecución
+    USO: Debugging dinámico, ajuste de verbosidad
+
+FLUJO DE MONITOREO TÍPICO:
+
+1. Verificar salud general -> /actuator/health
+2. Revisar métricas de sistema -> /actuator/metrics
+3. Consultar métricas de negocio -> /actuator/bank-stats
+4. Analizar transacciones -> /actuator/transaction-metrics
+5. Verificar configuración -> /actuator/env
+6. Auditar beans -> /actuator/beans
+
+EJEMPLO DE RESPUESTA DE HEALTH CHECK:
+
+{
+  "status": "UP",
+  "components": {
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "PostgreSQL",
+        "validation": "Connection successful"
+      }
+    },
+    "bankService": {
+      "status": "UP", 
+      "details": {
+        "total_accounts": 3,
+        "total_balance": 4000.00,
+        "failed_transactions": 0
+      }
+    },
+    "transferService": {
+      "status": "UP",
+      "details": {
+        "service": "TransferService",
+        "checkedAt": 1642256789000
+      }
+    }
+  }
+}
+
+EJEMPLO DE RESPUESTA DE BANK-STATS:
+
+{
+  "totalBalance": 4000.00,
+  "totalAccounts": 3,
+  "failedTransactions": 0,
+  "totalTransferredAmount": 150.00,
+  "timestamp": 1642256789000,
+  "status": "OPERATIONAL"
+}
+
+BENEFICIOS DE ACTUATOR EN PRODUCCIÓN:
+
+- Monitoreo en tiempo real sin acceso directo a servidores
+- Integración con herramientas como Prometheus, Grafana
+- Health checks para orquestadores de contenedores
+- Métricas de negocio específicas
+- Debugging sin necesidad de recompilar
+- Documentación automática de endpoints
+- Gestión centralizada de configuración
+
+CONFIGURACIÓN DE SEGURIDAD RECOMENDADA:
+
+- Exponer solo endpoints necesarios en producción
+- Configurar autenticación para endpoints sensibles
+- Usar HTTPS en producción
+- Limitar acceso por IP cuando sea posible
+- Monitorizar el acceso a endpoints de gestión
+
+ESTRATEGIA DE IMPLEMENTACIÓN:
+
+1. Endpoints básicos para todos los ambientes: health, info, metrics
+2. Endpoints de gestión solo para desarrollo: env, beans, mappings  
+3. Endpoints personalizados según necesidades de negocio
+4. Health checks para todas las dependencias externas
+5. Métricas para todos los servicios críticos
